@@ -1,4 +1,4 @@
-🍽️ CraveMatch — AI-Powered Restaurant Recommendation System
+🍽️ CraveMatch — Powered Restaurant Recommendation System
 ✨ Discover delicious places. Find your perfect dining match.
 
 CraveMatch is a restaurant discovery web application that helps users find restaurants based on their preferences. Users can choose a city, cuisine, price range, minimum rating, restaurant type, table-booking preference, and online-delivery preference. The application displays matching restaurants from the bundled dataset.
