@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f8faf5">
+  <meta name="description" content="Discover restaurants matched to your taste with CraveMatch AI.">
+  <title>CraveMatch | Discover your next favourite</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', path='/css/style.css') }}">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="/"><span class="brand-mark">♧<i>🍴</i></span><span>Crave<span>Match</span></span></a>
+  <nav class="main-nav" aria-label="Main navigation"><a class="active" href="#home">Home</a><a href="#discover">Discover</a><a href="#how">How It Works</a><a href="#about">About</a></nav>
+  <div class="nav-actions"><button class="icon-btn notification" aria-label="Notifications">♧<b></b></button><button class="avatar" aria-label="Profile">♙</button><a class="nav-cta" href="#discover"><span>⌕</span> Find Restaurants</a><button class="mobile-menu" aria-label="Open menu">☰</button></div>
+</header>
+<main id="home">
+  <section class="hero page-width">
+    <div class="hero-copy">
+      <div class="eyebrow"><span>✦</span> AI-Powered Recommendations</div>
+      <h1>Your cravings,<br><em>matched.</em></h1>
+      <p>Discover the best restaurants around you, personalized<br class="desktop-only"> by your taste, cuisine and budget.</p>
+      <div class="hero-note"><span class="note-icon">✦</span> Smart picks. Better meals. Happier cravings.</div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-orbit"></div>
+      <img class="hero-food" src="https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=1100&q=90" alt="Fresh pasta with herbs on a restaurant table">
+      <div class="floating-rating"><span>★</span><strong>4.8</strong><small>Highly Rated</small></div>
+      <div class="floating-pin"><span>⌖</span><strong>Chennai</strong><small>Explore nearby</small></div>
+      <div class="scribble">〰</div>
+    </div>
+  </section>
+
+  <section class="search-wrap page-width" id="discover">
+    <form class="search-panel" action="/recommend" method="post">
+      <label class="filter-field"><span class="field-icon coral">⌖</span><span class="field-content"><small>Location</small><select name="city"><option value="Any">Any City</option>{% for city in cities %}<option value="{{ city }}" {% if selected.get('city', 'Chennai') == city %}selected{% endif %}>{{ city }}</option>{% endfor %}</select></span></label>
+      <label class="filter-field"><span class="field-icon green">♜</span><span class="field-content"><small>Cuisine</small><select name="cuisine"><option value="Any">All Cuisines</option>{% for cuisine in cuisines %}<option value="{{ cuisine }}" {% if selected.get('cuisine') == cuisine %}selected{% endif %}>{{ cuisine }}</option>{% endfor %}</select></span></label>
+      <label class="filter-field"><span class="field-icon orange">▤</span><span class="field-content"><small>Price Range</small><select name="price_range"><option value="Any">Any Price</option><option value="1" {% if selected.get('price_range') == '1' %}selected{% endif %}>Budget · ₹</option><option value="2" {% if selected.get('price_range') == '2' %}selected{% endif %}>Moderate · ₹₹</option><option value="3" {% if selected.get('price_range') == '3' %}selected{% endif %}>Premium · ₹₹₹</option><option value="4" {% if selected.get('price_range') == '4' %}selected{% endif %}>Luxury · ₹₹₹₹</option></select></span></label>
+      <input type="hidden" name="min_rating" value="{{ selected.get('min_rating', 'Any') }}"><input type="hidden" name="restaurant_type" value="{{ selected.get('restaurant_type', '') }}"><input type="hidden" name="table_booking" value="{{ selected.get('table_booking', 'Any') }}"><input type="hidden" name="online_delivery" value="{{ selected.get('online_delivery', 'Any') }}"><input type="hidden" name="top_n" value="6">
+      <button class="search-submit" type="submit"><span>⌕</span> Find My Restaurants <b>→</b></button>
+    </form>
+  </section>
+
+  <section class="cuisine-section page-width">
+    <div class="cuisine-title">Explore by<br><strong>Cuisine</strong></div><div class="cuisine-divider"></div>
+    <div class="cuisine-list">{% for item in categories %}<button class="cuisine-tile {% if item.name == 'All' %}selected{% endif %}" type="button" data-cuisine="{{ item.name }}"><span>{{ item.emoji }}</span><small>{{ item.name }}</small></button>{% endfor %}</div>
+  </section>
+
+  <section class="recommend-section page-width" id="recommendations">
+    <div class="section-heading"><div><div class="heading-title"><span class="heading-icon">♜</span><h2>{% if searched %}Your Restaurant Matches{% else %}Recommended for You{% endif %}</h2></div><p>{% if searched %}{{ search_summary }}{% else %}Top restaurant picks selected from our recommendation dataset{% endif %}</p></div>
+      <div class="sort-control"><label for="sort-select">Sort by:</label><select id="sort-select"><option value="match">Best Match</option><option value="rating">Top Rated</option><option value="name">Name</option></select><button class="filter-icon" type="button" title="Show filters" onclick="document.querySelector('.search-panel').scrollIntoView({behavior:'smooth',block:'center'})">☷</button></div>
+    </div>
+    {% if error %}<div class="notice error">{{ error }}</div>{% endif %}
+    {% if searched and not restaurants %}<div class="empty-state"><span>🍽️</span><h3>No restaurants found</h3><p>Try a different city, cuisine or price range to discover more places.</p></div>{% endif %}
+    <div class="restaurant-grid" id="restaurant-grid">
+      {% for restaurant in restaurants %}
+      <article class="restaurant-card" data-match="{{ restaurant.match }}" data-rating="{{ restaurant.rating }}" data-name="{{ restaurant.name|lower }}">
+        <div class="restaurant-photo"><img src="{{ restaurant.image }}" alt="Food and dining at {{ restaurant.name }}" loading="lazy"><span class="match-pill">✦ {{ restaurant.match }}% Match</span><button class="heart-btn" type="button" aria-label="Save {{ restaurant.name }}">♡</button></div>
+        <div class="restaurant-info"><div class="restaurant-top"><div><h3>{{ restaurant.name }}</h3><p class="cuisine-meta">{{ restaurant.cuisines }}</p></div><div class="rating-block"><strong>★ {{ '%.1f'|format(restaurant.rating) }}</strong><small>{{ restaurant.votes }} votes</small></div></div>
+          <div class="restaurant-bottom"><span class="location-meta">⌖ {{ restaurant.locality or restaurant.city }}</span><span class="price-meta">{{ restaurant.price }}</span></div>
+          <div class="card-footer"><span class="city-label">{{ restaurant.city }}</span><button type="button" class="view-btn" data-name="{{ restaurant.name }}" data-cuisines="{{ restaurant.cuisines }}" data-rating="{{ restaurant.rating }}" data-city="{{ restaurant.city }}" data-locality="{{ restaurant.locality }}" data-match="{{ restaurant.match }}">View Match <b>→</b></button></div>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+  <section class="how-section" id="how"><div class="page-width"><div class="section-kicker">HOW IT WORKS</div><h2>Good food is just a few clicks away.</h2><div class="steps"><article><span>01</span><h3>Share your cravings</h3><p>Choose a city, cuisine and budget that feel right.</p></article><article><span>02</span><h3>Let AI find your match</h3><p>Our recommendation engine ranks restaurants around your preferences.</p></article><article><span>03</span><h3>Discover and enjoy</h3><p>Explore your matches and choose your next favourite place.</p></article></div></div></section>
+</main>
+<footer id="about"><div class="page-width footer-inner"><div><a class="brand footer-brand" href="/"><span class="brand-mark">♧<i>🍴</i></span><span>Crave<span>Match</span></span></a><p>Discover your next favourite table.</p></div><div class="footer-links"><a href="#home">Home</a><a href="#discover">Discover</a><a href="#how">How It Works</a></div>
+<div class="footer-credit"><strong>Developed by Sri Likhitha</strong><a href="https://mail.google.com/mail/?view=cm&fs=1&to=srilikhitha127@gmail.com"
+   target="_blank"
+   rel="noopener noreferrer">
+    srilikhitha127@gmail.com
+</a></div></div><div class="copyright">© 2026 CraveMatch. Made for people who love good food.</div></footer>
+<div class="modal" id="match-modal" aria-hidden="true"><div class="modal-backdrop"></div><div class="modal-card"><button class="modal-close" aria-label="Close">×</button><span class="modal-kicker">YOUR CRAVEMATCH</span><h2 id="modal-name">Restaurant</h2><p id="modal-cuisine"></p><div class="modal-stats"><div><strong id="modal-match">—</strong><small>Match score</small></div><div><strong id="modal-rating">—</strong><small>Guest rating</small></div></div><p class="modal-location" id="modal-location"></p><button class="search-submit modal-done" type="button">Sounds delicious ✓</button></div></div>
+<script src="{{ url_for('static', path='/js/app.js') }}"></script>
+</body></html>
